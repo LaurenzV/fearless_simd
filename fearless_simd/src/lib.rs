@@ -30,9 +30,16 @@ pub mod x86_64;
 #[cfg(target_arch = "x86_64")]
 pub use x86_64::Level;
 
+#[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+pub mod fallback;
+
+#[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+pub use fallback::Level;
+
 #[cfg(all(target_arch = "aarch64", feature = "half"))]
 pub type f16 = half::f16;
 #[cfg(all(target_arch = "aarch64", not(feature = "half")))]
 mod half_assed;
+
 #[cfg(all(target_arch = "aarch64", not(feature = "half")))]
 pub use half_assed::f16;

@@ -4,31 +4,28 @@
 //! Support for x86_64 SIMD capabilities.
 
 use crate::{Fallback, WithSimd};
-pub use avx2::Avx2;
-
-mod avx2;
+pub use crate::core_arch::x86_64::Avx2;
 
 /// The level enum for x86_64 architectures.
 #[derive(Clone, Copy, Debug)]
 pub enum Level {
     Fallback(Fallback),
-    // Avx2(Avx2),
+    Avx2(Avx2),
     // TODO: Avx512 (either nightly or pending stabilization)
 }
 
 impl Level {
     pub fn new() -> Self {
-        Level::Fallback(Fallback::new())
-        // if std::arch::is_x86_feature_detected!("avx2")
-        //     && std::arch::is_x86_feature_detected!("bmi2")
-        //     && std::arch::is_x86_feature_detected!("f16c")
-        //     && std::arch::is_x86_feature_detected!("fma")
-        //     && std::arch::is_x86_feature_detected!("lzcnt")
-        // {
-        //     unsafe { Level::Avx2(Avx2::new_unchecked()) }
-        // } else {
-        //     
-        // }
+        if std::arch::is_x86_feature_detected!("avx2")
+            && std::arch::is_x86_feature_detected!("bmi2")
+            && std::arch::is_x86_feature_detected!("f16c")
+            && std::arch::is_x86_feature_detected!("fma")
+            && std::arch::is_x86_feature_detected!("lzcnt")
+        {
+            unsafe { Level::Avx2(Avx2::new_unchecked()) }
+        } else {
+            Level::Fallback(Fallback::new())
+        }
     }
 
     #[inline]
@@ -41,16 +38,22 @@ impl Level {
     }
 
     #[inline]
+    pub fn fallback() -> Self {
+        Self::Fallback(Fallback::new())
+    }
+
+    #[inline]
     pub fn dispatch<W: WithSimd>(self, f: W) -> W::Output {
         // #[target_feature(enable = "avx2,bmi2,f16c,fma,lzcnt")]
         // #[inline]
-        // // unsafe not needed here with tf11, but can be justified
+        // unsafe not needed here with tf11, but can be justified
         // unsafe fn dispatch_avx2<W: WithSimd>(f: W, avx2: Avx2) -> W::Output {
         //     f.with_simd(avx2)
         // }
-        match self {
-            Level::Fallback(fallback) => f.with_simd(fallback),
-            // Level::Avx2(avx2) => unsafe { dispatch_avx2(f, avx2) },
-        }
+        // match self {
+        //     Level::Fallback(fallback) => f.with_simd(fallback),
+        //     Level::Avx2(avx2) => unimplemented!(),
+        // }
+        f.with_simd(Fallback::new())
     }
 }

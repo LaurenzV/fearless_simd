@@ -42,14 +42,15 @@ macro_rules! simd_dispatch {
     ) => {
         $( #[$meta:meta] )* $vis
         fn $func(level: $crate::Level $(, $arg: $ty )*) $( -> $ret )? {
-            #[target_feature(enable = "avx2,bmi2,f16c,fma,lzcnt")]
-            #[inline]
-            unsafe fn inner_avx2(avx2: $crate::x86_64::Avx2 $( , $arg: $ty )* ) $( -> $ret )? {
-                $inner( avx2 $( , $arg )* )
-            }
+            // #[target_feature(enable = "avx2,bmi2,f16c,fma,lzcnt")]
+            // #[inline]
+            // unsafe fn inner_avx2(avx2: $crate::x86_64::Avx2 $( , $arg: $ty )* ) $( -> $ret )? {
+            //     $inner( avx2 $( , $arg )* )
+            // }
             match level {
                 Level::Fallback(fb) => $inner(fb $( , $arg )* ),
-                Level::Avx2(avx2) => unsafe { inner_avx2 (avx2 $( , $arg )* ) }
+                // TODO: Replace with actual AVX2.
+                Level::Avx2(avx2) => $inner(Fallback::new() $( , $arg )* )
             }
         }
     };
