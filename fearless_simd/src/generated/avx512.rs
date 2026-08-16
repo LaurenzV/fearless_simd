@@ -10478,7 +10478,7 @@ impl Simd for Avx512 {
         crate::kernel!(
             #[inline(always)]
             fn kernel(token: Avx512, a: f32x16<Avx512>) -> f32x16<Avx512> {
-                _mm512_roundscale_ps::<{ _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC }>(a.into())
+                _mm512_roundscale_ps::<{ _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC }>(a.into())
                     .simd_into(token)
             }
         );
